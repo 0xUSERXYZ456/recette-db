@@ -1,0 +1,1411 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#07050c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="RECETTES.DB">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="application-name" content="RECETTES.DB">
+<title>RECETTES.DB</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@300;400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #07050c;
+    --surface:   #0e0a16;
+    --surface-2: #140f1e;
+    --border:    #1f1830;
+    --border-hi: #2e2448;
+
+    --cyan:      #00d4ff;
+    --cyan-dim:  #006680;
+    --cyan-glow: rgba(0,212,255,0.18);
+
+    --magenta:      #ff2070;
+    --magenta-dim:  #7a0030;
+    --magenta-glow: rgba(255,32,112,0.18);
+
+    --amber:      #ffb800;
+    --amber-dim:  #7a5500;
+    --amber-glow: rgba(255,184,0,0.15);
+
+    --violet:      #d580ff;
+    --violet-glow: rgba(213,128,255,0.25);
+    --green:      #00ff9d;
+    --green-glow: rgba(0,255,157,0.12);
+
+    --text:     #d8d0e8;
+    --text-dim: #7a7090;
+    --text-xs:  #4a4460;
+
+    --radius: 4px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 400;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* ── SCANLINES ───────────────────────────────────────────────────────────── */
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.08) 2px,
+      rgba(0,0,0,0.08) 4px
+    );
+  }
+
+  /* Grain subtil */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0.025;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  }
+
+  /* ── GLOW PULSE (badges néon) ────────────────────────────────────────────── */
+
+  @keyframes glowCyan {
+    0%,100% { box-shadow: 0 0 6px var(--cyan), 0 0 14px var(--cyan-glow), inset 0 0 6px rgba(0,212,255,0.08); }
+    50%     { box-shadow: 0 0 10px var(--cyan), 0 0 24px var(--cyan-glow), inset 0 0 10px rgba(0,212,255,0.14); }
+  }
+  @keyframes glowMagenta {
+    0%,100% { box-shadow: 0 0 6px var(--magenta), 0 0 14px var(--magenta-glow), inset 0 0 6px rgba(255,32,112,0.08); }
+    50%     { box-shadow: 0 0 10px var(--magenta), 0 0 24px var(--magenta-glow), inset 0 0 10px rgba(255,32,112,0.14); }
+  }
+  @keyframes glowAmber {
+    0%,100% { box-shadow: 0 0 6px var(--amber), 0 0 14px var(--amber-glow), inset 0 0 6px rgba(255,184,0,0.08); }
+    50%     { box-shadow: 0 0 10px var(--amber), 0 0 24px var(--amber-glow), inset 0 0 10px rgba(255,184,0,0.14); }
+  }
+
+  @keyframes titlePulse {
+    0%,100% {
+      text-shadow:
+        0 0 20px var(--cyan),
+        0 0 40px var(--cyan-glow),
+        0 0 80px rgba(0,212,255,0.08);
+    }
+    50% {
+      text-shadow:
+        0 0 30px var(--cyan),
+        0 0 60px var(--cyan-glow),
+        0 0 120px rgba(0,212,255,0.12);
+    }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── TOP BAR ─────────────────────────────────────────────────────────────── */
+
+  .top-bar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: flex-end;
+    padding: 14px 40px;
+    background: linear-gradient(to bottom, var(--bg) 60%, transparent);
+  }
+
+  .top-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .top-btn {
+    background: none; border: none;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: color 0.2s, text-shadow 0.2s;
+    padding: 0;
+  }
+  .top-btn:hover {
+    color: var(--cyan);
+    text-shadow: 0 0 10px var(--cyan);
+  }
+  .top-btn.danger:hover {
+    color: var(--magenta);
+    text-shadow: 0 0 10px var(--magenta);
+  }
+
+  .top-sep {
+    width: 1px; height: 12px;
+    background: var(--border-hi);
+  }
+
+  /* ── HEADER ──────────────────────────────────────────────────────────────── */
+
+  .page-header {
+    text-align: center;
+    padding: 90px 24px 60px;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Ligne déco horizontale */
+  .header-deco {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .deco-line {
+    flex: 1;
+    max-width: 80px;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--cyan-dim));
+  }
+  .deco-line.right {
+    background: linear-gradient(to left, transparent, var(--cyan-dim));
+  }
+
+  .deco-diamond {
+    width: 6px; height: 6px;
+    background: var(--cyan);
+    transform: rotate(45deg);
+    box-shadow: 0 0 8px var(--cyan), 0 0 20px var(--cyan-glow);
+  }
+
+  .page-header h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 5.5rem;
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    line-height: 0.9;
+    color: var(--cyan);
+    animation: titlePulse 4s ease-in-out infinite;
+  }
+
+  .page-header h1 .word-2 {
+    color: var(--text);
+    text-shadow:
+      0 0 20px rgba(216,208,232,0.3),
+      0 0 40px rgba(216,208,232,0.1);
+  }
+
+  .header-sub {
+    margin-top: 20px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  #total-count {
+    color: var(--magenta);
+    text-shadow: 0 0 8px var(--magenta);
+  }
+
+  /* ── CONTAINER ───────────────────────────────────────────────────────────── */
+
+  .container {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 24px 120px;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* ── SEARCH ──────────────────────────────────────────────────────────────── */
+
+  .search-area {
+    margin-bottom: 36px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .search-wrap {
+    position: relative;
+    margin-bottom: 24px;
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 14px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--cyan-dim);
+    pointer-events: none;
+    display: flex;
+    transition: color 0.2s;
+  }
+  .search-wrap:focus-within .search-icon {
+    color: var(--cyan);
+    filter: drop-shadow(0 0 4px var(--cyan));
+  }
+
+  .search-input {
+    width: 100%;
+    padding: 14px 16px 14px 42px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.9rem;
+    letter-spacing: 0.06em;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border-hi);
+    border-radius: var(--radius);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .search-input:focus {
+    border-color: var(--cyan-dim);
+    box-shadow: 0 0 0 1px var(--cyan-dim), 0 0 20px var(--cyan-glow);
+  }
+  .search-input::placeholder {
+    color: var(--text-xs);
+    font-style: normal;
+  }
+
+  /* Filters */
+  .filter-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border-hi);
+    padding-bottom: 2px;
+  }
+
+  .filter-tabs { display: flex; gap: 0; }
+
+  .tab {
+    padding: 8px 0;
+    margin-right: 24px;
+    background: none; border: none;
+    border-bottom: 1.5px solid transparent;
+    margin-bottom: -1px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-xs);
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s, text-shadow 0.2s;
+  }
+  .tab:hover { color: var(--text-dim); }
+  .tab.active {
+    color: var(--cyan);
+    border-bottom-color: var(--cyan);
+    text-shadow: 0 0 8px var(--cyan);
+  }
+
+  .results-count {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    color: var(--magenta);
+    text-shadow: 0 0 8px var(--magenta-glow);
+    padding-bottom: 8px;
+  }
+
+  /* ── RECIPE LIST ─────────────────────────────────────────────────────────── */
+
+  .recipe-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .recipe-card {
+    background: var(--surface);
+    border: 1px solid var(--border-hi);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    animation: fadeUp 0.22s ease both;
+    transition: border-color 0.22s, box-shadow 0.22s, background 0.22s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Ligne de couleur gauche permanente */
+  .recipe-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 2px;
+  }
+  .recipe-card.type-livre::before  { background: var(--cyan);    box-shadow: 0 0 8px var(--cyan); }
+  .recipe-card.type-video::before  { background: var(--magenta); box-shadow: 0 0 8px var(--magenta); }
+  .recipe-card.type-site::before   { background: var(--amber);   box-shadow: 0 0 8px var(--amber); }
+
+  .recipe-card:hover {
+    background: var(--surface-2);
+  }
+  .recipe-card.type-livre:hover  { border-color: var(--cyan-dim);    box-shadow: 0 0 20px var(--cyan-glow),    inset 0 0 30px rgba(0,212,255,0.03); }
+  .recipe-card.type-video:hover  { border-color: var(--magenta-dim); box-shadow: 0 0 20px var(--magenta-glow), inset 0 0 30px rgba(255,32,112,0.03); }
+  .recipe-card.type-site:hover   { border-color: var(--amber-dim);   box-shadow: 0 0 20px var(--amber-glow),   inset 0 0 30px rgba(255,184,0,0.03); }
+
+  .recipe-card:hover .card-actions { opacity: 1; }
+
+  /* ── BADGE TYPE ──────────────────────────────────────────────────────────── */
+
+  .type-badge {
+    flex-shrink: 0;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 4px 8px;
+    border-radius: 2px;
+    border: 1px solid;
+    animation-duration: 3.5s;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+    width: 52px;
+    text-align: center;
+  }
+
+  .badge-livre {
+    color: var(--cyan);
+    border-color: var(--cyan-dim);
+    background: rgba(0,212,255,0.06);
+    animation-name: glowCyan;
+  }
+  .badge-video {
+    color: var(--magenta);
+    border-color: var(--magenta-dim);
+    background: rgba(255,32,112,0.06);
+    animation-name: glowMagenta;
+  }
+  .badge-site {
+    color: var(--amber);
+    border-color: var(--amber-dim);
+    background: rgba(255,184,0,0.06);
+    animation-name: glowAmber;
+  }
+
+  /* ── CONTENU CARTE ───────────────────────────────────────────────────────── */
+
+  .recipe-info { flex: 1; min-width: 0; }
+
+  .recipe-name {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3;
+    color: var(--text);
+    transition: color 0.2s, text-shadow 0.2s;
+  }
+  .recipe-card.type-livre:hover .recipe-name { color: var(--cyan);    text-shadow: 0 0 12px var(--cyan-glow); }
+  .recipe-card.type-video:hover .recipe-name { color: #ff80a8;        text-shadow: 0 0 12px var(--magenta-glow); }
+  .recipe-card.type-site:hover  .recipe-name { color: var(--amber);   text-shadow: 0 0 12px var(--amber-glow); }
+
+  .recipe-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 5px;
+  }
+
+  .recipe-source-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    letter-spacing: 0.03em;
+  }
+
+  .recipe-ingredients {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--green);
+    letter-spacing: 0.03em;
+    opacity: 0.8;
+  }
+
+  .recipe-annotation {
+    font-size: 0.82rem;
+    font-weight: 400;
+    color: var(--violet);
+    text-shadow: 0 0 10px var(--violet-glow), 0 0 20px rgba(213,128,255,0.15);
+    font-style: italic;
+    letter-spacing: 0.06em;
+    line-height: 1.5;
+  }
+
+  /* ── DROITE CARTE ────────────────────────────────────────────────────────── */
+
+  .card-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  .recipe-link {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-decoration: none;
+    color: var(--green);
+    text-shadow: 0 0 8px var(--green-glow);
+    transition: text-shadow 0.2s;
+    white-space: nowrap;
+  }
+  .recipe-link:hover { text-shadow: 0 0 16px var(--green), 0 0 30px var(--green-glow); }
+
+  .recipe-page {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    white-space: nowrap;
+    letter-spacing: 0.04em;
+  }
+
+  .card-actions {
+    display: flex;
+    gap: 2px;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  .card-btn {
+    background: none; border: none;
+    cursor: pointer;
+    padding: 5px;
+    color: var(--text-xs);
+    transition: color 0.15s, filter 0.15s;
+    display: flex; align-items: center;
+    border-radius: 2px;
+  }
+  .card-btn:hover {
+    color: var(--cyan);
+    filter: drop-shadow(0 0 4px var(--cyan));
+  }
+  .card-btn.del:hover {
+    color: var(--magenta);
+    filter: drop-shadow(0 0 4px var(--magenta));
+  }
+
+  /* ── EMPTY STATE ─────────────────────────────────────────────────────────── */
+
+  .empty-state {
+    text-align: center;
+    padding: 72px 20px;
+    color: var(--text-xs);
+  }
+
+  .empty-icon {
+    display: block;
+    margin: 0 auto 20px;
+    opacity: 0.2;
+    color: var(--cyan);
+    filter: drop-shadow(0 0 6px var(--cyan));
+  }
+
+  .empty-state p {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+  }
+
+  /* ── MARK ────────────────────────────────────────────────────────────────── */
+
+  mark {
+    background: none;
+    color: var(--amber);
+    text-shadow: 0 0 8px var(--amber-glow);
+    padding: 0;
+  }
+
+  /* ── FAB ─────────────────────────────────────────────────────────────────── */
+
+  .fab {
+    position: fixed;
+    bottom: 36px; right: 36px;
+    z-index: 100;
+    background: transparent;
+    color: var(--cyan);
+    border: 1.5px solid var(--cyan-dim);
+    border-radius: var(--radius);
+    width: 48px; height: 48px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 0 16px var(--cyan-glow), inset 0 0 16px rgba(0,212,255,0.05);
+    transition: box-shadow 0.2s, border-color 0.2s, transform 0.18s;
+    animation: glowCyan 3s ease-in-out infinite;
+  }
+  .fab:hover {
+    border-color: var(--cyan);
+    box-shadow: 0 0 28px var(--cyan), 0 0 60px var(--cyan-glow), inset 0 0 20px rgba(0,212,255,0.1);
+    transform: translateY(-2px);
+  }
+  .fab:active { transform: translateY(0); }
+  .fab svg { filter: drop-shadow(0 0 4px var(--cyan)); }
+
+  /* ── PANEL OVERLAY ───────────────────────────────────────────────────────── */
+
+  .panel-overlay {
+    position: fixed; inset: 0;
+    background: rgba(7,5,12,0.75);
+    z-index: 200;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.28s ease;
+    backdrop-filter: blur(3px);
+  }
+  .panel-overlay.open { opacity: 1; pointer-events: all; }
+
+  /* ── PANEL ───────────────────────────────────────────────────────────────── */
+
+  .panel {
+    position: fixed;
+    bottom: 0; left: 50%;
+    transform: translateX(-50%) translateY(100%);
+    width: 100%; max-width: 760px;
+    background: var(--surface);
+    border-top: 1px solid var(--cyan-dim);
+    border-left: 1px solid var(--border-hi);
+    border-right: 1px solid var(--border-hi);
+    border-radius: 6px 6px 0 0;
+    box-shadow: 0 -8px 48px var(--cyan-glow), 0 -2px 0 var(--cyan-dim);
+    z-index: 300;
+    transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+    max-height: 88vh;
+    display: flex; flex-direction: column;
+  }
+  .panel.open { transform: translateX(-50%) translateY(0); }
+
+  .panel-handle {
+    width: 28px; height: 2px;
+    background: var(--cyan-dim);
+    box-shadow: 0 0 6px var(--cyan);
+    border-radius: 2px;
+    margin: 12px auto 0;
+    flex-shrink: 0;
+  }
+
+  .panel-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 18px 28px 14px;
+    border-bottom: 1px solid var(--border-hi);
+    flex-shrink: 0;
+  }
+
+  .panel-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    letter-spacing: 0.1em;
+    color: var(--cyan);
+    text-shadow: 0 0 16px var(--cyan-glow);
+  }
+
+  .panel-close {
+    background: none; border: none;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem; letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: color 0.2s, text-shadow 0.2s;
+    padding: 0;
+  }
+  .panel-close:hover {
+    color: var(--magenta);
+    text-shadow: 0 0 8px var(--magenta);
+  }
+
+  .panel-body {
+    overflow-y: auto;
+    padding: 24px 28px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* ── FORMULAIRE ──────────────────────────────────────────────────────────── */
+
+  .form-row  { display: flex; gap: 16px; }
+  .field     { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+
+  .field label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .field label .opt {
+    font-family: 'Rajdhani', sans-serif;
+    letter-spacing: 0;
+    text-transform: none;
+    font-size: 0.72rem;
+    color: var(--text-xs);
+  }
+
+  .field input, .field select {
+    padding: 10px 12px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1rem;
+    font-weight: 400;
+    color: var(--text);
+    background: var(--surface-2);
+    border: 1px solid var(--border-hi);
+    border-radius: var(--radius);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+    -webkit-appearance: none;
+  }
+  .field input:focus, .field select:focus {
+    border-color: var(--cyan-dim);
+    box-shadow: 0 0 0 1px var(--cyan-dim), 0 0 14px var(--cyan-glow);
+  }
+  .field input::placeholder { color: var(--text-xs); }
+
+  .field select {
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%234a4460' stroke-width='1.3' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 28px;
+  }
+
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 20px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border-hi);
+  }
+
+  .btn-cancel {
+    background: none; border: none;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.68rem; letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: color 0.2s;
+    padding: 0;
+  }
+  .btn-cancel:hover { color: var(--text); }
+
+  .btn-submit {
+    background: transparent;
+    color: var(--cyan);
+    border: 1px solid var(--cyan-dim);
+    border-radius: var(--radius);
+    padding: 10px 24px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.72rem; letter-spacing: 0.14em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: box-shadow 0.2s, border-color 0.2s, text-shadow 0.2s;
+    text-shadow: 0 0 8px var(--cyan-glow);
+    box-shadow: 0 0 10px var(--cyan-glow);
+  }
+  .btn-submit:hover {
+    border-color: var(--cyan);
+    box-shadow: 0 0 20px var(--cyan-glow), 0 0 40px rgba(0,212,255,0.1);
+    text-shadow: 0 0 12px var(--cyan);
+  }
+
+  /* ── TOAST ───────────────────────────────────────────────────────────────── */
+
+  #toast {
+    position: fixed;
+    bottom: 36px; left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    background: var(--surface-2);
+    color: var(--cyan);
+    border: 1px solid var(--cyan-dim);
+    padding: 10px 20px;
+    border-radius: var(--radius);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-shadow: 0 0 8px var(--cyan-glow);
+    box-shadow: 0 0 20px var(--cyan-glow);
+    opacity: 0;
+    transition: opacity 0.2s, transform 0.2s;
+    pointer-events: none;
+    white-space: pre-line; text-align: center;
+    max-width: 360px; z-index: 500;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ── RESPONSIVE ──────────────────────────────────────────────────────────── */
+
+  /* Tablette */
+  @media (max-width: 800px) {
+    .container  { max-width: 100%; }
+    .panel      { max-width: 100%; }
+  }
+
+  /* Mobile */
+  @media (max-width: 600px) {
+
+    /* Header */
+    .top-bar        { padding: 10px 16px; }
+    .top-btn        { font-size: 0.65rem; }
+    .page-header    { padding: 72px 16px 36px; }
+    .page-header h1 { font-size: 3rem; }
+    .header-sub     { font-size: 0.62rem; letter-spacing: 0.12em; }
+
+    /* Layout */
+    .container { padding: 0 12px 100px; }
+
+    /* Search */
+    .search-input   { font-size: 1rem; padding: 12px 0 12px 26px; }
+    .tab            { font-size: 0.65rem; margin-right: 18px; }
+    .results-count  { font-size: 0.62rem; }
+
+    /* Cartes */
+    .recipe-card    { padding: 14px 12px 14px 0; gap: 10px; }
+    .type-badge     { width: 44px; font-size: 0.55rem; padding: 3px 6px; }
+    .recipe-name    { font-size: 1rem; }
+    .recipe-source-label  { font-size: 0.68rem; }
+    .recipe-ingredients   { font-size: 0.65rem; }
+    .recipe-annotation    { font-size: 0.78rem; }
+    .card-actions   { opacity: 1; } /* toujours visible sur mobile */
+    .card-right     { gap: 6px; }
+    .recipe-link    { font-size: 0.62rem; }
+    .recipe-page    { font-size: 0.62rem; }
+
+    /* FAB */
+    .fab { bottom: 20px; right: 16px; width: 44px; height: 44px; }
+
+    /* Panel */
+    .panel        { max-height: 95vh; border-radius: 8px 8px 0 0; }
+    .panel-header { padding: 14px 16px 12px; }
+    .panel-title  { font-size: 1.3rem; }
+    .panel-body   { padding: 18px 16px 40px; gap: 16px; }
+    .form-row     { flex-direction: column; gap: 14px; }
+    .field input,
+    .field select { padding: 12px 10px; font-size: 1rem; }
+
+    /* Sécurité encoche iPhone (notch / home bar) */
+    .top-bar  { padding-top: max(10px, env(safe-area-inset-top)); }
+    .panel    { padding-bottom: env(safe-area-inset-bottom); }
+    .fab      { bottom: max(20px, calc(env(safe-area-inset-bottom) + 12px)); }
+    #toast    { bottom: max(20px, calc(env(safe-area-inset-bottom) + 12px)); }
+  }
+
+  /* Très petits écrans */
+  @media (max-width: 360px) {
+    .page-header h1 { font-size: 2.6rem; }
+    .top-actions    { gap: 12px; }
+    .top-btn        { font-size: 0.6rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── TOP BAR ────────────────────────────────────────────────────────────── -->
+<div class="top-bar">
+  <div class="top-actions">
+    <button class="top-btn" onclick="exportCSV()">// exporter</button>
+    <div class="top-sep"></div>
+    <button class="top-btn" onclick="document.getElementById('import-input').click()">// importer</button>
+    <input type="file" id="import-input" accept=".csv" style="display:none" onchange="importCSV(this)">
+    <div class="top-sep"></div>
+    <button class="top-btn danger" onclick="clearDatabase()">// vider</button>
+  </div>
+</div>
+
+<!-- ── HEADER ─────────────────────────────────────────────────────────────── -->
+<header class="page-header">
+  <div class="header-deco">
+    <div class="deco-line"></div>
+    <div class="deco-diamond"></div>
+    <div class="deco-line right"></div>
+  </div>
+  <h1>
+    <span class="word-1">RECETTES</span><br>
+    <span class="word-2">.DB</span>
+  </h1>
+  <p class="header-sub">
+    <span id="total-count"></span>
+  </p>
+</header>
+
+<!-- ── CONTENU ────────────────────────────────────────────────────────────── -->
+<div class="container">
+
+  <div class="search-area">
+    <div class="search-wrap">
+      <span class="search-icon">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <circle cx="6" cy="6" r="4.2" stroke="currentColor" stroke-width="1.3"/>
+          <line x1="9.2" y1="9.2" x2="13" y2="13" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <input class="search-input" id="search-input" type="text"
+        placeholder="> rechercher une recette..."
+        oninput="renderList()">
+    </div>
+
+    <div class="filter-bar">
+      <div class="filter-tabs">
+        <button class="tab active" data-filter="tout"  onclick="setFilter(this)">Tout</button>
+        <button class="tab" data-filter="livre" onclick="setFilter(this)">Livres</button>
+        <button class="tab" data-filter="video" onclick="setFilter(this)">Vidéos</button>
+        <button class="tab" data-filter="site"  onclick="setFilter(this)">Sites</button>
+      </div>
+      <div class="results-count" id="results-count"></div>
+    </div>
+  </div>
+
+  <div class="recipe-list" id="recipe-list"></div>
+
+</div>
+
+<!-- ── FAB ───────────────────────────────────────────────────────────────── -->
+<button class="fab" onclick="openPanel()" title="Ajouter une recette">
+  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+    <line x1="7" y1="1.5" x2="7" y2="12.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    <line x1="1.5" y1="7" x2="12.5" y2="7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+  </svg>
+</button>
+
+<!-- ── PANEL ──────────────────────────────────────────────────────────────── -->
+<div class="panel-overlay" id="panel-overlay" onclick="closePanel()"></div>
+<div class="panel" id="panel" role="dialog" aria-modal="true">
+  <div class="panel-handle"></div>
+  <div class="panel-header">
+    <span class="panel-title" id="panel-title">AJOUTER UNE RECETTE</span>
+    <button class="panel-close" onclick="closePanel()">[ fermer ]</button>
+  </div>
+  <div class="panel-body">
+
+    <div class="form-row">
+      <div class="field" style="flex:2">
+        <label>Nom de la recette</label>
+        <input type="text" id="f-name" placeholder="ex: Tarte tatin">
+      </div>
+      <div class="field">
+        <label>Type</label>
+        <select id="f-type" onchange="updateFormFields()">
+          <option value="livre">Livre</option>
+          <option value="video">Vidéo</option>
+          <option value="site">Site</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="fields-livre">
+      <div class="form-row">
+        <div class="field" style="flex:2">
+          <label>Nom du livre</label>
+          <input type="text" id="f-livre-nom" placeholder="ex: Larousse de la cuisine">
+        </div>
+        <div class="field">
+          <label>Page <span class="opt">(optionnel)</span></label>
+          <input type="text" id="f-livre-page" placeholder="142">
+        </div>
+      </div>
+    </div>
+
+    <div id="fields-video" style="display:none">
+      <div class="form-row">
+        <div class="field" style="flex:2">
+          <label>URL de la vidéo</label>
+          <input type="url" id="f-video-url" placeholder="https://youtube.com/...">
+        </div>
+        <div class="field">
+          <label>Chaîne / Auteur <span class="opt">(optionnel)</span></label>
+          <input type="text" id="f-video-chaine" placeholder="Cyril Lignac">
+        </div>
+      </div>
+    </div>
+
+    <div id="fields-site" style="display:none">
+      <div class="form-row">
+        <div class="field" style="flex:2">
+          <label>URL de la page</label>
+          <input type="url" id="f-site-url" placeholder="https://...">
+        </div>
+        <div class="field">
+          <label>Nom du site <span class="opt">(optionnel)</span></label>
+          <input type="text" id="f-site-nom" placeholder="Marmiton">
+        </div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Ingrédients principaux <span class="opt">(optionnel — séparés par des virgules)</span></label>
+      <input type="text" id="f-ingredients" placeholder="poulet, citron, thym, ail...">
+    </div>
+
+    <div class="field">
+      <label>Annotation <span class="opt">(optionnelle)</span></label>
+      <input type="text" id="f-annotation" placeholder="Version allégée, meilleure sauce...">
+    </div>
+
+    <div class="form-actions">
+      <button class="btn-cancel" onclick="closePanel()">[ annuler ]</button>
+      <button class="btn-submit" id="btn-submit" onclick="saveRecipe()">[ ajouter ]</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ─── CONSTANTES ───────────────────────────────────────────────────────────────
+
+const STORAGE_KEY = 'mes-recettes-v1';
+const CSV_SEP     = ';';
+const CSV_HEADER  = 'nom;type;livre;page;url;chaine_auteur;site_nom;annotation;ingredients';
+const CSV_COLS    = CSV_HEADER.split(CSV_SEP);
+const VALID_TYPES = ['livre', 'video', 'site'];
+
+const ICONS = {
+  livre: `<svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+    <path d="M2 2.5C2 2.5 4 1.5 7.5 1.5C11 1.5 13 2.5 13 2.5V12.5C13 12.5 11 11.5 7.5 11.5C4 11.5 2 12.5 2 12.5V2.5Z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/>
+    <line x1="7.5" y1="1.5" x2="7.5" y2="11.5" stroke="currentColor" stroke-width="1.1"/>
+  </svg>`,
+  video: `<svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+    <rect x="1.5" y="3.5" width="8" height="8" rx="1" stroke="currentColor" stroke-width="1.1"/>
+    <path d="M9.5 6L13.5 4V11L9.5 9" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/>
+  </svg>`,
+  site: `<svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+    <circle cx="7.5" cy="7.5" r="5.5" stroke="currentColor" stroke-width="1.1"/>
+    <path d="M7.5 2C7.5 2 5.5 4.5 5.5 7.5C5.5 10.5 7.5 13 7.5 13C7.5 13 9.5 10.5 9.5 7.5C9.5 4.5 7.5 2 7.5 2Z" stroke="currentColor" stroke-width="1.1"/>
+    <line x1="2" y1="7.5" x2="13" y2="7.5" stroke="currentColor" stroke-width="1.1"/>
+  </svg>`,
+  edit: `<svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+    <path d="M1.5 9.5L3.5 7.5L9.5 1.5L11.5 3.5L5.5 9.5L3.5 11.5L1.5 9.5Z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/>
+    <line x1="8" y1="3" x2="10" y2="5" stroke="currentColor" stroke-width="1.1"/>
+  </svg>`,
+  del: `<svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+    <line x1="2.5" y1="2.5" x2="10.5" y2="10.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+    <line x1="10.5" y1="2.5" x2="2.5" y2="10.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+  </svg>`,
+};
+
+const BADGE = { livre: 'LIVRE', video: 'VIDEO', site: 'SITE' };
+
+// ─── ÉTAT ─────────────────────────────────────────────────────────────────────
+
+let recipes      = [];
+let activeFilter = 'tout';
+let editingId    = null;
+
+// ─── PERSISTENCE ─────────────────────────────────────────────────────────────
+
+function load() {
+  try { recipes = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+  catch { recipes = []; }
+}
+
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(recipes));
+}
+
+// ─── UTILITAIRES ─────────────────────────────────────────────────────────────
+
+function normalize(str) {
+  return (str || '')
+    .replace(/œ/gi, 'oe').replace(/æ/gi, 'ae')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+}
+
+function extractDomain(url) {
+  try { return new URL(url).hostname.replace(/^www\./, ''); }
+  catch { return url; }
+}
+
+function getSourceLabel(r) {
+  if (r.type === 'livre') return `${r.livre || ''}${r.page ? '  p.' + r.page : ''}`;
+  if (r.type === 'video') return r.chaine || '';
+  if (r.type === 'site')  return r.siteNom || extractDomain(r.url || '');
+  return '';
+}
+
+function dedupKey(r) {
+  if (r.type === 'livre')
+    return normalize('livre|' + r.name + '|' + (r.livre || '') + '|' + (r.page || ''));
+  return normalize(r.url || '');
+}
+
+// ─── TOAST ───────────────────────────────────────────────────────────────────
+
+let toastTimer;
+function toast(msg, duration = 3200) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), duration);
+}
+
+// ─── RENDU ───────────────────────────────────────────────────────────────────
+
+function highlight(text, terms) {
+  if (!terms.length || !text) return text || '';
+  const escaped = terms.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  return text.replace(new RegExp(`(${escaped.join('|')})`, 'gi'), '<mark>$1</mark>');
+}
+
+function renderList() {
+  const raw   = document.getElementById('search-input').value.trim();
+  const terms = raw.length ? raw.split(/\s+/).filter(Boolean) : [];
+  const list  = document.getElementById('recipe-list');
+
+  const filtered = recipes
+    .filter(r => {
+      if (activeFilter !== 'tout' && r.type !== activeFilter) return false;
+      if (!terms.length) return true;
+      const hay = normalize([r.name, getSourceLabel(r), r.annotation, r.ingredients].join(' '));
+      return terms.every(t => hay.includes(normalize(t)));
+    })
+    .sort((a, b) => a.name.localeCompare(b.name, 'fr'));
+
+  const n = recipes.length;
+  document.getElementById('total-count').textContent =
+    n === 0 ? 'AUCUNE ENTRÉE' : `${n} ENTRÉE${n > 1 ? 'S' : ''} DANS LA BASE`;
+
+  document.getElementById('results-count').textContent =
+    filtered.length !== recipes.length
+      ? `${filtered.length} résultat${filtered.length > 1 ? 's' : ''}`
+      : '';
+
+  if (!filtered.length) {
+    list.innerHTML = `<div class="empty-state">
+      <svg class="empty-icon" width="48" height="48" viewBox="0 0 48 48" fill="none">
+        <rect x="8" y="9" width="22" height="30" rx="1" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M8 9C8 9 14 7 30 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="30" y1="9" x2="30" y2="39" stroke="currentColor" stroke-width="1.5"/>
+        <line x1="13" y1="19" x2="25" y2="19" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+        <line x1="13" y1="25" x2="22" y2="25" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+      </svg>
+      <p>${recipes.length === 0
+        ? '> AUCUNE DONNÉE. APPUYER SUR + POUR INITIALISER.'
+        : '> AUCUN RÉSULTAT POUR CETTE REQUÊTE.'}</p>
+    </div>`;
+    return;
+  }
+
+  list.innerHTML = filtered.map(r => {
+    const hl     = s => highlight(s, terms);
+    const label  = getSourceLabel(r);
+    const hasUrl = r.type === 'video' || r.type === 'site';
+
+    const rightEl = hasUrl
+      ? `<a class="recipe-link" href="${r.url}" target="_blank" rel="noopener">↗ OUVRIR</a>`
+      : r.page
+        ? `<span class="recipe-page">p.${r.page}</span>`
+        : '';
+
+    const metaItems = [];
+    if (label)          metaItems.push(`<span class="recipe-source-label">${hl(label)}</span>`);
+    if (r.ingredients)  metaItems.push(`<span class="recipe-ingredients">// ${hl(r.ingredients)}</span>`);
+    if (r.annotation)   metaItems.push(`<span class="recipe-annotation">${hl(r.annotation)}</span>`);
+
+    return `<div class="recipe-card type-${r.type}">
+      <span class="type-badge badge-${r.type}">${BADGE[r.type]}</span>
+      <span class="source-icon" style="color:${r.type==='livre'?'var(--cyan)':r.type==='video'?'var(--magenta)':'var(--amber)'}">${ICONS[r.type]||''}</span>
+      <div class="recipe-info">
+        <div class="recipe-name">${hl(r.name)}</div>
+        ${metaItems.length ? `<div class="recipe-meta">${metaItems.join('')}</div>` : ''}
+      </div>
+      <div class="card-right">
+        ${rightEl}
+        <div class="card-actions">
+          <button class="card-btn" onclick="editRecipe('${r.id}')" title="Modifier">${ICONS.edit}</button>
+          <button class="card-btn del" onclick="deleteRecipe('${r.id}')" title="Supprimer">${ICONS.del}</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── FILTRES ─────────────────────────────────────────────────────────────────
+
+function setFilter(btn) {
+  activeFilter = btn.dataset.filter;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  renderList();
+}
+
+// ─── PANNEAU ─────────────────────────────────────────────────────────────────
+
+function openPanel(id = null) {
+  editingId = id;
+  const isEdit = id !== null;
+  document.getElementById('panel-title').textContent =
+    isEdit ? 'MODIFIER LA RECETTE' : 'AJOUTER UNE RECETTE';
+  document.getElementById('btn-submit').textContent =
+    isEdit ? '[ enregistrer ]' : '[ ajouter ]';
+
+  if (isEdit) {
+    const r = recipes.find(r => r.id === id);
+    if (r) populateForm(r);
+  } else {
+    resetForm();
+  }
+
+  document.getElementById('panel-overlay').classList.add('open');
+  document.getElementById('panel').classList.add('open');
+  setTimeout(() => document.getElementById('f-name').focus(), 340);
+}
+
+function closePanel() {
+  document.getElementById('panel-overlay').classList.remove('open');
+  document.getElementById('panel').classList.remove('open');
+  setTimeout(() => { resetForm(); editingId = null; }, 320);
+}
+
+function populateForm(r) {
+  document.getElementById('f-name').value        = r.name        || '';
+  document.getElementById('f-type').value        = r.type        || 'livre';
+  document.getElementById('f-ingredients').value = r.ingredients || '';
+  document.getElementById('f-annotation').value  = r.annotation  || '';
+  updateFormFields();
+  if (r.type === 'livre') {
+    document.getElementById('f-livre-nom').value  = r.livre || '';
+    document.getElementById('f-livre-page').value = r.page  || '';
+  } else if (r.type === 'video') {
+    document.getElementById('f-video-url').value    = r.url    || '';
+    document.getElementById('f-video-chaine').value = r.chaine || '';
+  } else {
+    document.getElementById('f-site-url').value = r.url     || '';
+    document.getElementById('f-site-nom').value = r.siteNom || '';
+  }
+}
+
+function resetForm() {
+  ['f-name','f-livre-nom','f-livre-page',
+   'f-video-url','f-video-chaine',
+   'f-site-url','f-site-nom',
+   'f-ingredients','f-annotation'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('f-type').value = 'livre';
+  updateFormFields();
+}
+
+function updateFormFields() {
+  const type = document.getElementById('f-type').value;
+  document.getElementById('fields-livre').style.display = type === 'livre' ? '' : 'none';
+  document.getElementById('fields-video').style.display = type === 'video' ? '' : 'none';
+  document.getElementById('fields-site').style.display  = type === 'site'  ? '' : 'none';
+}
+
+// ─── CRUD ─────────────────────────────────────────────────────────────────────
+
+function buildRecipeFromForm() {
+  const name = document.getElementById('f-name').value.trim();
+  const type = document.getElementById('f-type').value;
+  if (!name) { alert('Le nom de la recette est requis.'); return null; }
+
+  const r = { name, type };
+  if (type === 'livre') {
+    r.livre = document.getElementById('f-livre-nom').value.trim();
+    r.page  = document.getElementById('f-livre-page').value.trim();
+    if (!r.livre) { alert('Le nom du livre est requis.'); return null; }
+  } else if (type === 'video') {
+    r.url    = document.getElementById('f-video-url').value.trim();
+    r.chaine = document.getElementById('f-video-chaine').value.trim();
+    if (!r.url) { alert("L'URL de la vidéo est requise."); return null; }
+  } else {
+    r.url     = document.getElementById('f-site-url').value.trim();
+    r.siteNom = document.getElementById('f-site-nom').value.trim()
+                || extractDomain(document.getElementById('f-site-url').value.trim());
+    if (!r.url) { alert("L'URL de la page est requise."); return null; }
+  }
+  r.ingredients = document.getElementById('f-ingredients').value.trim();
+  r.annotation  = document.getElementById('f-annotation').value.trim();
+  return r;
+}
+
+function saveRecipe() {
+  const data = buildRecipeFromForm();
+  if (!data) return;
+  if (editingId === null) {
+    if (recipes.some(e => dedupKey(e) === dedupKey(data))) { alert('Cette recette existe déjà.'); return; }
+    recipes.unshift({ id: Date.now().toString(), ...data });
+  } else {
+    if (recipes.some(e => e.id !== editingId && dedupKey(e) === dedupKey(data))) { alert('Une recette identique existe déjà.'); return; }
+    const idx = recipes.findIndex(r => r.id === editingId);
+    if (idx === -1) return;
+    recipes[idx] = { id: editingId, ...data };
+  }
+  save(); closePanel(); renderList();
+}
+
+function editRecipe(id)   { openPanel(id); }
+
+function deleteRecipe(id) {
+  const r = recipes.find(r => r.id === id);
+  if (!r || !confirm(`Supprimer « ${r.name} » ?`)) return;
+  recipes = recipes.filter(r => r.id !== id);
+  save(); renderList();
+}
+
+function clearDatabase() {
+  if (!recipes.length) { toast('BASE DÉJÀ VIDE.'); return; }
+  const n = recipes.length;
+  if (!confirm(`PURGER ${n} ENREGISTREMENT${n>1?'S':''} ?\nCette action est irréversible.`)) return;
+  if (!confirm(`CONFIRMER LA SUPPRESSION DÉFINITIVE ?`)) return;
+  recipes = []; save(); renderList(); toast('BASE PURGÉE.');
+}
+
+// ─── CSV : EXPORT ─────────────────────────────────────────────────────────────
+
+function csvField(val) {
+  return '"' + (val || '').replace(/"/g, '""') + '"';
+}
+
+function exportCSV() {
+  if (!recipes.length) { toast('AUCUNE DONNÉE À EXPORTER.'); return; }
+  const rows = [CSV_HEADER];
+  for (const r of recipes) {
+    rows.push([
+      csvField(r.name), csvField(r.type),
+      csvField(r.livre||''), csvField(r.page||''),
+      csvField(r.url||''), csvField(r.chaine||''),
+      csvField(r.siteNom||''), csvField(r.annotation||''),
+      csvField(r.ingredients||''),
+    ].join(CSV_SEP));
+  }
+  const blob = new Blob(['\uFEFF' + rows.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = Object.assign(document.createElement('a'), { href: url, download: 'recettes.csv' });
+  a.click(); URL.revokeObjectURL(url);
+  toast(`${recipes.length} ENTRÉE${recipes.length>1?'S':''} EXPORTÉE${recipes.length>1?'S':''}.`);
+}
+
+// ─── CSV : IMPORT ─────────────────────────────────────────────────────────────
+
+function parseCSV(text) {
+  if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+  text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  const rows = [];
+  let row = [], field = '', inQuotes = false, i = 0;
+  while (i < text.length) {
+    const ch = text[i];
+    if (inQuotes) {
+      if (ch==='"' && text[i+1]==='"') { field+='"'; i+=2; continue; }
+      else if (ch==='"') { inQuotes=false; }
+      else { field+=ch; }
+    } else {
+      if      (ch==='"')  { inQuotes=true; }
+      else if (ch===';')  { row.push(field); field=''; }
+      else if (ch==='\n') {
+        row.push(field); field='';
+        if (row.some(f=>f!=='')) rows.push(row);
+        row=[]; i++; continue;
+      } else { field+=ch; }
+    }
+    i++;
+  }
+  row.push(field);
+  if (row.some(f=>f!=='')) rows.push(row);
+  return rows;
+}
+
+function importCSV(input) {
+  const file = input.files[0];
+  if (!file) return;
+  input.value = '';
+  const reader = new FileReader();
+  reader.onload = e => {
+    const rows = parseCSV(e.target.result);
+    if (!rows.length) { toast('FICHIER VIDE OU ILLISIBLE.'); return; }
+
+    const header = rows[0].map(h=>h.trim().toLowerCase()).join(CSV_SEP);
+    if (header !== CSV_HEADER) { toast('EN-TÊTE CSV INVALIDE.\n' + CSV_HEADER); return; }
+
+    const imported = [], skipped = [];
+    for (let i = 0; i < rows.length - 1; i++) {
+      const cols = rows[i+1], lineNum = i+2;
+      if (cols.length !== CSV_COLS.length) { skipped.push(`Ligne ${lineNum} : colonnes incorrectes`); continue; }
+      const [nom,type,livre,page,url,chaineAuteur,siteNom,annotation,ingredients] = cols.map(c=>c.trim());
+      if (!nom)                                        { skipped.push(`Ligne ${lineNum} : nom manquant`);  continue; }
+      if (!VALID_TYPES.includes(type))                 { skipped.push(`Ligne ${lineNum} : type invalide`); continue; }
+      if (type==='livre' && !livre)                    { skipped.push(`Ligne ${lineNum} : livre manquant`); continue; }
+      if ((type==='video'||type==='site') && !url)     { skipped.push(`Ligne ${lineNum} : URL manquante`); continue; }
+      const r = { id: Date.now().toString()+'_'+i, name: nom, type };
+      if (type==='livre') { r.livre=livre; r.page=page; }
+      if (type==='video') { r.url=url; r.chaine=chaineAuteur; }
+      if (type==='site')  { r.url=url; r.siteNom=siteNom||extractDomain(url); }
+      if (annotation)  r.annotation  = annotation;
+      if (ingredients) r.ingredients = ingredients;
+      imported.push(r);
+    }
+
+    if (!imported.length) { toast('AUCUNE ENTRÉE VALIDE.\n'+skipped.slice(0,3).join('\n')); return; }
+
+    const existingKeys = new Set(recipes.map(dedupKey));
+    const newOnes   = imported.filter(r=>!existingKeys.has(dedupKey(r)));
+    const dupeCount = imported.length - newOnes.length;
+
+    const lines = [
+      `${imported.length} entrée${imported.length>1?'s':''} valide${imported.length>1?'s':''}.`,
+      dupeCount ? `${dupeCount} doublon${dupeCount>1?'s':''} (ignorés).` : null,
+      `${newOnes.length} nouvelle${newOnes.length>1?'s':''} à injecter.`,
+      skipped.length ? `${skipped.length} ligne${skipped.length>1?'s':''} rejetée${skipped.length>1?'s':''}.` : null,
+      '', 'Fusionner avec la base existante ?',
+    ].filter(l=>l!==null).join('\n');
+
+    if (!confirm(lines)) return;
+    recipes = [...newOnes, ...recipes];
+    save(); renderList();
+    const parts = [`${newOnes.length} entrée${newOnes.length>1?'s':''} importée${newOnes.length>1?'s':''}`];
+    if (dupeCount)      parts.push(`${dupeCount} doublon${dupeCount>1?'s':''} ignoré${dupeCount>1?'s':''}`);
+    if (skipped.length) parts.push(`${skipped.length} ligne${skipped.length>1?'s':''} rejetée${skipped.length>1?'s':''}`);
+    toast(parts.join(' // '), 4500);
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+// ─── CLAVIER ─────────────────────────────────────────────────────────────────
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closePanel();
+});
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+
+load();
+renderList();
+</script>
+</body>
+</html>
