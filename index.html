@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="RECETTES.DB">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="application-name" content="RECETTES.DB">
-<title>RECETTES.DB.v.1</title>
+<title>RECETTES.DB</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@300;400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -372,6 +372,16 @@
 
   .recipe-card:hover .card-actions { opacity: 1; }
 
+  /* ── BADGE + ICÔNE ───────────────────────────────────────────────────────── */
+
+  .badge-icon {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
   /* ── BADGE TYPE ──────────────────────────────────────────────────────────── */
 
   .type-badge {
@@ -465,8 +475,9 @@
 
   .card-right {
     display: flex;
-    align-items: center;
-    gap: 10px;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
     flex-shrink: 0;
   }
 
@@ -484,35 +495,50 @@
 
   .recipe-page {
     font-family: 'Share Tech Mono', monospace;
-    font-size: 0.7rem;
-    color: var(--text-dim);
+    font-size: 0.72rem;
+    font-weight: 400;
+    color: var(--amber);
+    text-shadow: 0 0 6px var(--amber-glow);
     white-space: nowrap;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.06em;
+    transition: text-shadow 0.2s;
+  }
+  .recipe-card:hover .recipe-page {
+    text-shadow: 0 0 12px var(--amber), 0 0 28px var(--amber-glow);
   }
 
   .card-actions {
     display: flex;
-    gap: 2px;
+    flex-direction: column;
+    gap: 4px;
     opacity: 0;
     transition: opacity 0.15s;
   }
 
   .card-btn {
-    background: none; border: none;
+    background: none;
+    border: none;
     cursor: pointer;
-    padding: 5px;
-    color: var(--text-xs);
-    transition: color 0.15s, filter 0.15s;
-    display: flex; align-items: center;
+    padding: 3px 6px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    display: flex;
+    align-items: center;
+    gap: 5px;
     border-radius: 2px;
+    transition: color 0.15s, text-shadow 0.15s;
+    white-space: nowrap;
+    color: var(--text-xs);
   }
+  .card-btn svg { flex-shrink: 0; }
   .card-btn:hover {
     color: var(--cyan);
-    filter: drop-shadow(0 0 4px var(--cyan));
+    text-shadow: 0 0 8px var(--cyan);
   }
   .card-btn.del:hover {
     color: var(--magenta);
-    filter: drop-shadow(0 0 4px var(--magenta));
+    text-shadow: 0 0 8px var(--magenta);
   }
 
   /* ── EMPTY STATE ─────────────────────────────────────────────────────────── */
@@ -770,42 +796,95 @@
 
   /* Tablette */
   @media (max-width: 800px) {
-    .container  { max-width: 100%; }
-    .panel      { max-width: 100%; }
+    .container { max-width: 100%; }
+    .panel     { max-width: 100%; }
   }
 
   /* Mobile */
   @media (max-width: 600px) {
 
+    /* Encoche / home bar iOS */
+    .top-bar { padding-top: max(10px, env(safe-area-inset-top)); }
+    .panel   { padding-bottom: env(safe-area-inset-bottom); }
+    .fab     { bottom: max(20px, calc(env(safe-area-inset-bottom) + 12px)); }
+    #toast   { bottom: max(20px, calc(env(safe-area-inset-bottom) + 12px)); }
+
     /* Header */
-    .top-bar        { padding: 10px 16px; }
-    .top-btn        { font-size: 0.65rem; }
-    .page-header    { padding: 72px 16px 36px; }
+    .top-bar        { padding-left: 16px; padding-right: 16px; }
+    .top-btn        { font-size: 0.68rem; }
+    .top-actions    { gap: 14px; }
+    .page-header    { padding: 72px 16px 32px; }
     .page-header h1 { font-size: 3rem; }
-    .header-sub     { font-size: 0.62rem; letter-spacing: 0.12em; }
+    .header-sub     { font-size: 0.65rem; letter-spacing: 0.1em; }
 
     /* Layout */
     .container { padding: 0 12px 100px; }
 
     /* Search */
-    .search-input   { font-size: 1rem; padding: 12px 0 12px 26px; }
-    .tab            { font-size: 0.65rem; margin-right: 18px; }
-    .results-count  { font-size: 0.62rem; }
+    .search-input  { font-size: 1rem; padding: 12px 0 12px 26px; }
+    .tab           { font-size: 0.68rem; margin-right: 16px; padding: 10px 0; }
+    .results-count { font-size: 0.68rem; }
 
-    /* Cartes */
-    .recipe-card    { padding: 14px 12px 14px 0; gap: 10px; }
-    .type-badge     { width: 44px; font-size: 0.55rem; padding: 3px 6px; }
-    .recipe-name    { font-size: 1rem; }
-    .recipe-source-label  { font-size: 0.68rem; }
-    .recipe-ingredients   { font-size: 0.65rem; }
-    .recipe-annotation    { font-size: 0.78rem; }
-    .card-actions   { opacity: 1; } /* toujours visible sur mobile */
-    .card-right     { gap: 6px; }
-    .recipe-link    { font-size: 0.62rem; }
-    .recipe-page    { font-size: 0.62rem; }
+    /* ── CARTE MOBILE : disposition en deux blocs ────────────────────────── */
+
+    .recipe-card {
+      padding: 14px 14px 14px 16px;
+      flex-wrap: wrap;        /* permet le passage en deux lignes */
+      gap: 10px 12px;
+      align-items: flex-start;
+    }
+
+    /* Sur mobile : badge masqué, icône seule centrée */
+    .badge-icon {
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      align-self: center;
+      gap: 0;
+    }
+    .type-badge  { display: none; }
+    .source-icon { margin-top: 0; width: 22px; }
+    .source-icon svg { width: 20px; height: 20px; }
+
+    /* Info prend toute la largeur restante et le nom peut passer à la ligne */
+    .recipe-info { flex: 1; min-width: 0; }
+
+    .recipe-name {
+      white-space: normal;      /* retour à la ligne autorisé */
+      overflow: visible;
+      text-overflow: clip;
+      font-size: 1.05rem;
+      line-height: 1.35;
+    }
+
+    .recipe-source-label  { font-size: 0.75rem; }
+    .recipe-ingredients   { font-size: 0.72rem; }
+    .recipe-annotation    { font-size: 0.8rem; }
+
+    /* card-right : passe en dessous, pleine largeur, aligné à droite */
+    .card-right {
+      flex-direction: row;
+      align-items: center;
+      justify-content: flex-end;
+      width: 100%;
+      gap: 14px;
+      padding-left: 0;
+    }
+
+    /* Boutons côte à côte sur mobile */
+    .card-actions {
+      opacity: 1;
+      flex-direction: row;
+      gap: 10px;
+    }
+
+    .card-btn { padding: 6px; }
+
+    .recipe-link { font-size: 0.72rem; }
+    .recipe-page { font-size: 0.72rem; }
 
     /* FAB */
-    .fab { bottom: 20px; right: 16px; width: 44px; height: 44px; }
+    .fab { bottom: 20px; right: 16px; width: 46px; height: 46px; }
 
     /* Panel */
     .panel        { max-height: 95vh; border-radius: 8px 8px 0 0; }
@@ -815,19 +894,14 @@
     .form-row     { flex-direction: column; gap: 14px; }
     .field input,
     .field select { padding: 12px 10px; font-size: 1rem; }
-
-    /* Sécurité encoche iPhone (notch / home bar) */
-    .top-bar  { padding-top: max(10px, env(safe-area-inset-top)); }
-    .panel    { padding-bottom: env(safe-area-inset-bottom); }
-    .fab      { bottom: max(20px, calc(env(safe-area-inset-bottom) + 12px)); }
-    #toast    { bottom: max(20px, calc(env(safe-area-inset-bottom) + 12px)); }
   }
 
   /* Très petits écrans */
   @media (max-width: 360px) {
     .page-header h1 { font-size: 2.6rem; }
-    .top-actions    { gap: 12px; }
-    .top-btn        { font-size: 0.6rem; }
+    .top-actions    { gap: 10px; }
+    .top-btn        { font-size: 0.62rem; }
+    .recipe-name    { font-size: 0.95rem; }
   }
 </style>
 </head>
@@ -839,7 +913,7 @@
     <button class="top-btn" onclick="exportCSV()">// exporter</button>
     <div class="top-sep"></div>
     <button class="top-btn" onclick="document.getElementById('import-input').click()">// importer</button>
-    <input type="file" id="import-input" accept=".csv" style="display:none" onchange="importCSV(this)">
+    <input type="file" id="import-input" accept=".csv" multiple style="display:none" onchange="importCSV(this)">
     <div class="top-sep"></div>
     <button class="top-btn danger" onclick="clearDatabase()">// vider</button>
   </div>
@@ -1050,7 +1124,7 @@ function extractDomain(url) {
 }
 
 function getSourceLabel(r) {
-  if (r.type === 'livre') return `${r.livre || ''}${r.page ? '  p.' + r.page : ''}`;
+  if (r.type === 'livre') return r.livre || '';
   if (r.type === 'video') return r.chaine || '';
   if (r.type === 'site')  return r.siteNom || extractDomain(r.url || '');
   return '';
@@ -1137,8 +1211,10 @@ function renderList() {
     if (r.annotation)   metaItems.push(`<span class="recipe-annotation">${hl(r.annotation)}</span>`);
 
     return `<div class="recipe-card type-${r.type}">
-      <span class="type-badge badge-${r.type}">${BADGE[r.type]}</span>
-      <span class="source-icon" style="color:${r.type==='livre'?'var(--cyan)':r.type==='video'?'var(--magenta)':'var(--amber)'}">${ICONS[r.type]||''}</span>
+      <div class="badge-icon">
+        <span class="type-badge badge-${r.type}">${BADGE[r.type]}</span>
+        <span class="source-icon" style="color:${r.type==='livre'?'var(--cyan)':r.type==='video'?'var(--magenta)':'var(--amber)'}">${ICONS[r.type]||''}</span>
+      </div>
       <div class="recipe-info">
         <div class="recipe-name">${hl(r.name)}</div>
         ${metaItems.length ? `<div class="recipe-meta">${metaItems.join('')}</div>` : ''}
@@ -1146,8 +1222,8 @@ function renderList() {
       <div class="card-right">
         ${rightEl}
         <div class="card-actions">
-          <button class="card-btn" onclick="editRecipe('${r.id}')" title="Modifier">${ICONS.edit}</button>
-          <button class="card-btn del" onclick="deleteRecipe('${r.id}')" title="Supprimer">${ICONS.del}</button>
+          <button class="card-btn" onclick="editRecipe('${r.id}')" title="Modifier">${ICONS.edit} EDIT</button>
+          <button class="card-btn del" onclick="deleteRecipe('${r.id}')" title="Supprimer">${ICONS.del} SUPP</button>
         </div>
       </div>
     </div>`;
@@ -1342,58 +1418,78 @@ function parseCSV(text) {
 }
 
 function importCSV(input) {
-  const file = input.files[0];
-  if (!file) return;
+  const files = Array.from(input.files);
+  if (!files.length) return;
   input.value = '';
-  const reader = new FileReader();
-  reader.onload = e => {
-    const rows = parseCSV(e.target.result);
-    if (!rows.length) { toast('FICHIER VIDE OU ILLISIBLE.'); return; }
 
-    const header = rows[0].map(h=>h.trim().toLowerCase()).join(CSV_SEP);
-    if (header !== CSV_HEADER) { toast('EN-TÊTE CSV INVALIDE.\n' + CSV_HEADER); return; }
+  const allImported = [], allSkipped = [];
+  let pending = files.length;
 
-    const imported = [], skipped = [];
-    for (let i = 0; i < rows.length - 1; i++) {
-      const cols = rows[i+1], lineNum = i+2;
-      if (cols.length !== CSV_COLS.length) { skipped.push(`Ligne ${lineNum} : colonnes incorrectes`); continue; }
-      const [nom,type,livre,page,url,chaineAuteur,siteNom,annotation,ingredients] = cols.map(c=>c.trim());
-      if (!nom)                                        { skipped.push(`Ligne ${lineNum} : nom manquant`);  continue; }
-      if (!VALID_TYPES.includes(type))                 { skipped.push(`Ligne ${lineNum} : type invalide`); continue; }
-      if (type==='livre' && !livre)                    { skipped.push(`Ligne ${lineNum} : livre manquant`); continue; }
-      if ((type==='video'||type==='site') && !url)     { skipped.push(`Ligne ${lineNum} : URL manquante`); continue; }
-      const r = { id: Date.now().toString()+'_'+i, name: nom, type };
-      if (type==='livre') { r.livre=livre; r.page=page; }
-      if (type==='video') { r.url=url; r.chaine=chaineAuteur; }
-      if (type==='site')  { r.url=url; r.siteNom=siteNom||extractDomain(url); }
-      if (annotation)  r.annotation  = annotation;
-      if (ingredients) r.ingredients = ingredients;
-      imported.push(r);
-    }
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const rows = parseCSV(e.target.result);
 
-    if (!imported.length) { toast('AUCUNE ENTRÉE VALIDE.\n'+skipped.slice(0,3).join('\n')); return; }
+      if (!rows.length) {
+        allSkipped.push(`${file.name} : fichier vide`);
+      } else {
+        const header = rows[0].map(h => h.trim().toLowerCase()).join(CSV_SEP);
+        if (header !== CSV_HEADER) {
+          allSkipped.push(`${file.name} : en-tête invalide`);
+        } else {
+          for (let i = 0; i < rows.length - 1; i++) {
+            const cols = rows[i+1], lineNum = i+2;
+            if (cols.length !== CSV_COLS.length) { allSkipped.push(`${file.name} L${lineNum} : colonnes incorrectes`); continue; }
+            const [nom,type,livre,page,url,chaineAuteur,siteNom,annotation,ingredients] = cols.map(c=>c.trim());
+            if (!nom)                                    { allSkipped.push(`${file.name} L${lineNum} : nom manquant`);   continue; }
+            if (!VALID_TYPES.includes(type))             { allSkipped.push(`${file.name} L${lineNum} : type invalide`);  continue; }
+            if (type==='livre' && !livre)                { allSkipped.push(`${file.name} L${lineNum} : livre manquant`); continue; }
+            if ((type==='video'||type==='site') && !url) { allSkipped.push(`${file.name} L${lineNum} : URL manquante`);  continue; }
+            const r = { id: Date.now().toString()+'_'+i+'_'+file.name, name: nom, type };
+            if (type==='livre') { r.livre=livre; r.page=page; }
+            if (type==='video') { r.url=url; r.chaine=chaineAuteur; }
+            if (type==='site')  { r.url=url; r.siteNom=siteNom||extractDomain(url); }
+            if (annotation)  r.annotation  = annotation;
+            if (ingredients) r.ingredients = ingredients;
+            allImported.push(r);
+          }
+        }
+      }
 
-    const existingKeys = new Set(recipes.map(dedupKey));
-    const newOnes   = imported.filter(r=>!existingKeys.has(dedupKey(r)));
-    const dupeCount = imported.length - newOnes.length;
+      // Tous les fichiers sont lus — bilan unique
+      pending--;
+      if (pending > 0) return;
 
-    const lines = [
-      `${imported.length} entrée${imported.length>1?'s':''} valide${imported.length>1?'s':''}.`,
-      dupeCount ? `${dupeCount} doublon${dupeCount>1?'s':''} (ignorés).` : null,
-      `${newOnes.length} nouvelle${newOnes.length>1?'s':''} à injecter.`,
-      skipped.length ? `${skipped.length} ligne${skipped.length>1?'s':''} rejetée${skipped.length>1?'s':''}.` : null,
-      '', 'Fusionner avec la base existante ?',
-    ].filter(l=>l!==null).join('\n');
+      if (!allImported.length) {
+        toast('AUCUNE ENTRÉE VALIDE.\n' + allSkipped.slice(0, 3).join('\n'));
+        return;
+      }
 
-    if (!confirm(lines)) return;
-    recipes = [...newOnes, ...recipes];
-    save(); renderList();
-    const parts = [`${newOnes.length} entrée${newOnes.length>1?'s':''} importée${newOnes.length>1?'s':''}`];
-    if (dupeCount)      parts.push(`${dupeCount} doublon${dupeCount>1?'s':''} ignoré${dupeCount>1?'s':''}`);
-    if (skipped.length) parts.push(`${skipped.length} ligne${skipped.length>1?'s':''} rejetée${skipped.length>1?'s':''}`);
-    toast(parts.join(' // '), 4500);
-  };
-  reader.readAsText(file, 'UTF-8');
+      const existingKeys = new Set(recipes.map(dedupKey));
+      const newOnes   = allImported.filter(r => !existingKeys.has(dedupKey(r)));
+      const dupeCount = allImported.length - newOnes.length;
+
+      const lines = [
+        `${files.length} fichier${files.length>1?'s':''} analysé${files.length>1?'s':''}.`,
+        `${allImported.length} entrée${allImported.length>1?'s':''} valide${allImported.length>1?'s':''}.`,
+        dupeCount      ? `${dupeCount} doublon${dupeCount>1?'s':''} (ignorés).` : null,
+        `${newOnes.length} nouvelle${newOnes.length>1?'s':''} à ajouter.`,
+        allSkipped.length ? `${allSkipped.length} ligne${allSkipped.length>1?'s':''} rejetée${allSkipped.length>1?'s':''}.` : null,
+        '', 'Fusionner avec la base existante ?',
+      ].filter(l => l !== null).join('\n');
+
+      if (!confirm(lines)) return;
+
+      recipes = [...newOnes, ...recipes];
+      save(); renderList();
+
+      const parts = [`${newOnes.length} entrée${newOnes.length>1?'s':''} importée${newOnes.length>1?'s':''}`];
+      if (dupeCount)         parts.push(`${dupeCount} doublon${dupeCount>1?'s':''} ignoré${dupeCount>1?'s':''}`);
+      if (allSkipped.length) parts.push(`${allSkipped.length} ligne${allSkipped.length>1?'s':''} rejetée${allSkipped.length>1?'s':''}`);
+      toast(parts.join(' // '), 4500);
+    };
+    reader.readAsText(file, 'UTF-8');
+  });
 }
 
 // ─── CLAVIER ─────────────────────────────────────────────────────────────────
